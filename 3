@@ -1,0 +1,142 @@
+// DOM elements
+const businessForm = document.getElementById('businessForm');
+const taskForm = document.getElementById('taskForm');
+const tasksList = document.getElementById('tasks');
+const businessesList = document.getElementById('businesses');
+const selectBusiness = document.getElementById('selectBusiness');
+const downloadPDFBtn = document.getElementById('downloadPDF');
+
+let businesses = [];
+let selectedBusinessIndex = null;
+
+// --- Add business ---
+businessForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const business = {
+        name: document.getElementById('companyName').value,
+        idea: document.getElementById('businessIdea').value,
+        scale: document.getElementById('scale').value,
+        budget: document.getElementById('budget').value,
+        timePeriod: document.getElementById('timePeriod').value,
+        tasks: [] // Each business has its own tasks array
+    };
+
+    businesses.push(business);
+    renderBusinesses();
+    businessForm.reset();
+});
+
+// --- Render businesses in list and select dropdown ---
+function renderBusinesses() {
+    businessesList.innerHTML = '';
+    selectBusiness.innerHTML = '<option value="">Select Business</option>';
+
+    businesses.forEach((b, index) => {
+        // Clickable list
+        const li = document.createElement('li');
+        li.textContent = `${b.name} (${b.scale})`;
+        li.onclick = () => selectBusinessTasks(index);
+        businessesList.appendChild(li);
+
+        // Dropdown for task selection
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = b.name;
+        selectBusiness.appendChild(option);
+    });
+}
+
+// --- Select business to show its tasks ---
+function selectBusinessTasks(index) {
+    selectedBusinessIndex = index;
+    const b = businesses[index];
+    renderTasks(b.tasks);
+    selectBusiness.value = index;
+}
+
+// --- Add task to selected business ---
+taskForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    if (selectedBusinessIndex === null) {
+        alert('Please select a business first!');
+        return;
+    }
+
+    const task = {
+        name: document.getElementById('taskName').value,
+        startDate: document.getElementById('taskStartDate').value,
+        endDate: document.getElementById('taskEndDate').value,
+        priority: document.getElementById('taskPriority').value
+    };
+
+    // Add task to the specific business
+    businesses[selectedBusinessIndex].tasks.push(task);
+    renderTasks(businesses[selectedBusinessIndex].tasks);
+    taskForm.reset();
+});
+
+// --- Render tasks for selected business ---
+function renderTasks(tasks) {
+    tasksList.innerHTML = '';
+    tasks.forEach((task, i) => {
+        const li = document.createElement('li');
+        li.classList.add(task.priority.toLowerCase());
+        li.innerHTML = `
+            <span>${task.name} - ${task.startDate} to ${task.endDate} (${task.priority})</span>
+            <button class="delete-btn" onclick="deleteTask(${i})">❌</button>
+        `;
+        tasksList.appendChild(li);
+    });
+}
+
+// --- Delete task for selected business ---
+function deleteTask(index) {
+    if (selectedBusinessIndex === null) return;
+    businesses[selectedBusinessIndex].tasks.splice(index, 1);
+    renderTasks(businesses[selectedBusinessIndex].tasks);
+}
+
+// --- Download PDF for all businesses ---
+downloadPDFBtn.addEventListener('click', () => {
+    if (businesses.length === 0) {
+        alert('Add at least one business!');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.text('Business Planner Dashboard', 14, y);
+    y += 10;
+
+    businesses.forEach((b, index) => {
+        doc.setFontSize(14);
+        doc.text(`Business ${index + 1}: ${b.name}`, 14, y); y += 10;
+        doc.text(`Idea: ${b.idea}`, 14, y); y += 7;
+        doc.text(`Scale: ${b.scale}`, 14, y); y += 7;
+        doc.text(`Budget: $${b.budget}`, 14, y); y += 7;
+        doc.text(`Time Period: ${b.timePeriod}`, 14, y); y += 10;
+
+        doc.setFontSize(12);
+        if (b.tasks.length === 0) {
+            doc.text('No tasks added', 14, y); y += 10;
+        } else {
+            b.tasks.forEach((task, i) => {
+                const taskText = `${i + 1}. ${task.name} - ${task.startDate} to ${task.endDate} (${task.priority})`;
+                doc.text(taskText, 14, y); y += 7;
+            });
+        }
+
+        y += 10;
+        if (y > 270) {  // Page break
+            doc.addPage();
+            y = 20;
+        }
+    });
+
+    doc.save('All_Businesses_Planner.pdf');
+});
