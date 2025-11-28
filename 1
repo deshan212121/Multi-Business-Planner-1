@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Business Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Multi-Business Planner Dashboard</h1>
+
+    <!-- Add Business Form -->
+    <form id="businessForm">
+      <input type="text" id="companyName" placeholder="Company Name" required>
+      <input type="text" id="businessIdea" placeholder="Business Idea" required>
+      <select id="scale" required>
+        <option value="">Select Scale</option>
+        <option value="Small">Small</option>
+        <option value="Medium">Medium</option>
+        <option value="Large">Large</option>
+      </select>
+      <input type="number" id="budget" placeholder="Budget ($)" required>
+      <input type="text" id="timePeriod" placeholder="Time Period (e.g., 6 months)" required>
+      <button type="submit">Add Business</button>
+    </form>
+
+    <!-- Businesses List -->
+    <div class="business-list-section">
+      <h2>Businesses</h2>
+      <p class="instruction">(please select business under the business topic, not the box above the taskbar)</p>
+      <ul id="businesses"></ul>
+    </div>
+
+    <!-- Add Task Section -->
+    <div class="task-section">
+      <h2>Add Task to Selected Business</h2>
+      <select id="selectBusiness">
+        <option value="">Select Business</option>
+      </select>
+      <form id="taskForm">
+        <input type="text" id="taskName" placeholder="Task Name" required>
+        <input type="date" id="taskStartDate" required>
+        <input type="date" id="taskEndDate" required>
+        <select id="taskPriority">
+          <option value="High">High 🔴</option>
+          <option value="Medium">Medium 🟠</option>
+          <option value="Low">Low 🟢</option>
+        </select>
+        <button type="submit">Add Task</button>
+      </form>
+
+      <ul id="tasks"></ul>
+    </div>
+
+    <button id="downloadPDF">Download Selected Business PDF 📄</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
